@@ -1,0 +1,670 @@
+openapi: "3.0.0"
+
+info:
+  title: Fasion Backstag Manager API
+  version: 0.0.1
+
+servers:
+  - url: https://admin.fasion.org/api
+
+tags:
+  - name: auth
+    description: 登录和验证
+  - name: users
+    description: 注册用户管理
+  - name: tasks
+    description: 任务管理
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: 系统登录接口
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  description: 用户名 / 邮箱 / 手机号
+                  type: string
+                password:
+                  description: 密码
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: 客户端错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      summary: 退出登录
+      operationId: logout
+      responses:
+        '200':
+          description: 成功
+
+  /auth/info:
+    get:
+      tags:
+        - auth
+      summary: 获取管理员信息
+      responses:
+        '200':
+          description: 成功，返回用户信息
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 管理员用户id
+                  username:
+                    type: string
+                    description: 管理员用户名
+                  nickname:
+                    type: string
+                    description: 管理员昵称
+                  status:
+                    type: string
+                    description: 状态(enable,disable)
+
+  /users:
+    get:
+      tags:
+        - users
+      summary: 获取用户列表
+      parameters:
+        - name: phone
+          in: string
+          description: 手机号
+          required: false
+          schema:
+            type: string
+        - name: email
+          in: string
+          description: 邮箱号
+          required: false
+          schema:
+            type: string
+        - name: uid
+          in: path
+          description: 用户id
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: path
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功，返回用户列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Users'
+  /users/{uid}:
+    get:
+      tags:
+        - users
+      summary: 获取用户信息
+      responses:
+        '200':
+          description: 成功，返回用户信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    patch:
+      tags:
+        - users
+      summary: 修改用户信息
+      responses:
+        '200':
+          description: 成功，返回修改后的用户信息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /tasks:
+    get:
+      tags:
+        - tasks
+      summary: 获取任务列表
+      operationId: get-tasks
+      parameters:
+        - name: type
+          in: path
+          description: task type
+          required: true
+          schema:
+            type: string
+            example: face-swap
+        - name: ownerId
+          in: path
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: path
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功，返回任务列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tasks'
+
+  /tasks/{task_id}:
+    get:
+      tags:
+        - tasks
+      summary: 获取任务详情
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功，返回任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+
+  /assets:
+    get:
+      tags:
+        - assets
+      summary: 素材查询
+      parameters:
+        - name: type
+          in: path
+          required: false
+          schema:
+            type: string
+        - name: uid
+          in: path
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功，返回资源
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assets'
+        '404':
+          description: 没有查询到数据
+          content:
+            application/json:
+              schema:
+                default: { }
+        '403':
+          description: 没权限
+          content:
+            application/json:
+              schema:
+                default: { }
+
+  /assets/{assets_id}:
+    delete:
+      tags:
+        - assets
+      summary: 删除资源文件
+      parameters:
+        - name: assets_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功，什么都不返回
+          content:
+            application/json:
+              schema:
+                default: { }
+
+  /payments:
+    get:
+      tags:
+        - payments
+      summary: 通过type查询充值订单/退款订单/点数消费记录
+      parameters:
+        - name: page
+          in: path
+          required: false
+          schema:
+            type: integer
+        - name: uid
+          in: path
+          required: false
+          schema:
+            type: string
+        - name: type
+          in: path
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功，返回用户充值记录信息(有分页)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payments'
+
+  /payments/{payment_id}:
+    get:
+      tags:
+        - payments
+      summary: 通过payment_id查询资金流水
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功，返回资金流水信息
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 管理员用户id
+                  point:
+                    type: string
+                    description: 点数
+
+  /points/packs:
+    get:
+      tags:
+        - points
+      summary: 查询充值套餐
+      responses:
+        '200':
+          description: 成功，返回点数套餐集合(没有分页)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 编号
+                  sku:
+                    type: string
+                    description: 点数套餐id号
+                  name:
+                    type: string
+                    description: 套餐名称
+                  slogan:
+                    type: string
+                    description: 点数描述(每张可低2.3元/张)
+                  price:
+                    type: integer
+                    description: 价格(1元表示为100，100元表示为10000)
+                  points:
+                    type: integer
+                    description: 可兑换的点数
+                  expiration_period:
+                    type: integer
+                    description: 有效期,以天为单位
+
+    post:
+      tags:
+        - points
+      summary: 添加充值套餐
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 套餐名称
+                slogan:
+                  type: string
+                  description: 点数描述(每张可低2.3元/张)
+                price:
+                  type: integer
+                  description: 价格(1元表示为100，100元表示为10000)
+                points:
+                  type: integer
+                  description: 可兑换的点数
+                expiration_period:
+                  type: integer
+                  description: 有效期,以天为单位
+
+      responses:
+        '200':
+          description: 成功
+        '400':
+          description: 客户端错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+
+  /points/packs/{sku}:
+    patch:
+      tags:
+        - points
+      summary: 修改充值套餐(快照修改)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: 编号
+                name:
+                  type: string
+                  description: 套餐名称
+                slogan:
+                  type: string
+                  description: 点数描述(每张可低2.3元/张)
+                price:
+                  type: integer
+                  description: 价格(1元表示为100，100元表示为10000)
+                points:
+                  type: integer
+                  description: 可兑换的点数
+                expiration_period:
+                  type: integer
+                  description: 有效期,以天为单位
+                status:
+                  type: string
+                  description:
+      responses:
+        '200':
+          description: 成功，返回点数套餐
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: 点数套餐id号
+                  name:
+                    type: string
+                    description: 套餐名称
+                  slogan:
+                    type: string
+                    description: 点数描述(每张可低2.3元/张)
+                  price:
+                    type: integer
+                    description: 价格(1元表示为100，100元表示为10000)
+                  points:
+                    type: integer
+                    description: 可兑换的点数
+        '400':
+          description: 客户端错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+
+  /purchases:
+    get:
+      tags:
+        - purchases
+      summary: 订单列表
+      parameters:
+        - name: type
+          in: path
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功，返回资源
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Purchases'
+
+  /purchases/{purchase_id}/refund:
+    put:
+      tags:
+        - purchases
+      summary: 通过订单id进行资金原路退款
+      parameters:
+        - name: purchase_id
+          in: path
+          required: true
+          description: 订单id
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 退款成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '206':
+          description: 程序处理了一部分请求，另一部分需要等微信处理完成
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '410':
+          description: 退款已关闭
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+        '500':
+          description: 退款出现异常
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+
+components:
+  schemas:
+    Failure:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+      required:
+        - message
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+    Links:
+      type: object
+      properties:
+        next:
+          type: string
+        last:
+          type: string
+
+    User:
+      type: object
+      properties:
+        uid:
+          type: integer
+        nickname:
+          type: string
+        avatar:
+          type: string
+    Users:
+      type: object
+      properties:
+        total:
+          type: integer
+        links:
+          $ref: '#/components/schemas/Links'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        status:
+          type: object
+    Tasks:
+      type: object
+      properties:
+        total:
+          type: integer
+        links:
+          $ref: '#/components/schemas/Links'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        thumbnail:
+          type: string
+    Assets:
+      type: object
+      properties:
+        total:
+          type: integer
+        links:
+          $ref: '#/components/schemas/Links'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 订单编号
+        type:
+          type: string
+          description: 类型（支付、退款）
+        cash:
+          type: integer
+          description: 金额(1元表示为100，100元表示为10000)
+        point:
+          type: integer
+          description: 购买点数
+        channel:
+          type: string
+          description: 付款渠道
+        status:
+          type: string
+          description: 订单状态
+        created_at:
+          type: string
+          description: 提交时间
+        updated_at:
+          type: string
+          description: 更新时间
+        finished_at:
+          type: string
+          description: 结束时间
+        uid:
+          type: string
+          description: 用户id
+
+    Payments:
+      type: object
+      properties:
+        total:
+          type: integer
+        links:
+          $ref: '#/components/schemas/Links'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+
+    Purchase:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 订单号
+        created_at:
+          type: string
+          description: 提交时间
+        type:
+          type: string
+          description: 类别
+        amount:
+          type: integer
+          description: 数量
+        payment_id:
+          type: string
+          description: 资金表id
+
+    Purchases:
+      type: object
+      properties:
+        total:
+          type: integer
+        links:
+          $ref: '#/components/schemas/Links'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Purchase'
+
+

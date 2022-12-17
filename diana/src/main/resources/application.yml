@@ -1,0 +1,24 @@
+spring:
+  profiles:
+    active: ${profile}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+server:
+  port: 56200
+  servlet:
+    context-path: /api
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+diana:
+  ks3:
+    endpoint: ks3-cn-beijing.ksyun.com
+  redis:
+    expiration: 7200
+    prefix:
+      authCode: ${profile}:authCode
+      phoneCode: ${profile}:loginCode
+      ticketCode: ${profile}:ticket
