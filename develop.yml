@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+#  web:
+#    build:
+#      context: .
+#      dockerfile: ./deploy/Website.Dockerfile
+#      args:
+#        git_ref: 0.1.0-alpha.2
+#    restart: always
+#    volumes:
+#      - '$PWD/Caddyfile:/etc/caddy/Caddyfile'
+#    ports:
+#      - 3000:3000
+  data:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: fasion
+      POSTGRES_DB: fasion
+      PGDATA: /var/lib/postgresql/data/fasion
+    volumes:
+      - '$PWD/deploy/seed/fasion.sql:/docker-entrypoint-initdb.d/fasion.sql'
+      - '$PWD/deploy/seed/develop.sql:/docker-entrypoint-initdb.d/develop.sql'
+    ports:
+    - 5432:5432
+  redis:
+    image: redis
+    restart: always
+    depends_on:
+      - data
+    ports:
+    - 6379:6379

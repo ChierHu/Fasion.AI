@@ -1,0 +1,791 @@
+openapi: "3.0.0"
+
+info:
+  title: Fasion API
+  version: 0.0.1
+
+servers:
+  - url: https://api.fasion.ai
+
+tags:
+  - name: auth
+    description: 登录和注册
+  - name: profile
+    description: 用户资料
+  - name: assets
+    description: 素材管理
+  - name: tasks
+    description: 任务管理
+  - name: files
+    description: 文件上传下载
+
+paths:
+  /auth/code:
+    post:
+      tags:
+        - auth
+      summary: 发送短信验证码
+      operationId: send-code
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  description: 手机号码
+                  type: string
+              required:
+                - phone
+      responses:
+        '200':
+          description: 发送成功
+        '403':
+          description: Rate limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+  /auth/login:
+    post:
+      tags:
+        - auth
+      summary: 用户登录接口
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  description: 手机号码
+                  type: string
+                code:
+                  description: 验证码
+                  type: string
+              required:
+                - phone
+                - code
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: 客户端错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+  /auth/logout:
+    post:
+      tags:
+        - auth
+      summary: 退出登录
+      operationId: logout
+      responses:
+        '200':
+          description: 成功
+  /auth/apply:
+    post:
+      tags:
+        - auth
+      summary: 添加用户申请试用信息
+      operationId: apply
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: 姓名
+                  type: string
+                company:
+                  description: 公司名称
+                  type: string
+                req_note:
+                  description: 备注
+                  type: string
+      responses:
+        '200':
+          description: 提交成功
+        '400':
+          description: 客户端错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+  /me:
+    get:
+      tags:
+        - profile
+      summary: 获取个人资料
+      operationId: get-profile
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '403':
+          description: 客户端错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+    patch:
+      tags:
+        - profile
+      summary: 更新个人资料
+      operationId: update-profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: 成功，返回更新的用户资料
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: 客户端错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+
+  /access/password:
+    put:
+      tags:
+        - profile
+      summary: 修改密码
+      operationId: access-password
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: object
+            example: 'password123'
+
+      parameters:
+        - name: code
+          in: path
+          description: 短信验证码
+          required: false
+        - name: pass
+          in: path
+          description: 原密码
+          required: false
+      responses:
+        '200':
+          description: 成功
+
+  /assets/ticket:
+    post:
+      tags:
+        - assets
+      summary: 获取素材凭证
+      operationId: get-assets-ticket
+      parameters:
+        - name: type
+          in: path
+          description: 素材类型
+          required: true
+          schema:
+            type: string
+            example: face-source
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  bucket:
+                    type: string
+                  access_key:
+                    type: string
+                  signature:
+                    type: string
+                  object_key:
+                    type: string
+  /assets/check:
+    post:
+      tags:
+        - assets
+      summary: 回收素材凭证
+      operationId: check-assets-ticket
+      parameters:
+        - name: ticket
+          in: path
+          description: ticket id
+          required: true
+          schema:
+            type: string
+            example: "T1036"
+      responses:
+        '200':
+          description: 上传的素材列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+
+  /assets:
+    post:
+      tags:
+        - assets
+      summary: 上传素材
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            example: face-source
+        - name: ticket
+          in: path
+          description: ticket id
+          required: true
+          schema:
+            type: string
+            example: "T1036"
+      responses:
+        '200':
+          description: 成功，返回素材详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+
+    get:
+      tags:
+        - assets
+      summary: 获取素材列表（特定类型）
+      operationId: get-assets
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            example: face-source
+        - name: bundle_id
+          in: path
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功，返回形象列表
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+
+  /assets/{asset_id}:
+    parameters:
+      - name: asset_id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - assets
+      summary: 获取素材详情
+      responses:
+        '200':
+          description: 成功，返回素材详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+    delete:
+      tags:
+        - assets
+      summary: 删除素材（特定类型）
+      operationId: delete-asset
+      responses:
+        '204':
+          description: 删除成功
+
+  /tasks:
+    get:
+      tags:
+        - tasks
+      summary: 获取任务列表
+      operationId: get-tasks
+      parameters:
+        - name: type
+          in: path
+          description: task type
+          required: true
+          schema:
+            type: string
+            example: face-swap
+        - name: page
+          in: path
+          required: false
+          schema:
+            type: integer
+        - name: since
+          in: path
+          required: false
+          description: 开始时间
+          schema:
+            type: string
+            example: 2021-06-29
+        - name: until
+          in: path
+          required: false
+          description: 结束时间
+          schema:
+            type: string
+            example: 2021-06-30
+      responses:
+        '200':
+          description: 成功，返回任务列表
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tasks'
+    post:
+      tags:
+        - tasks
+      summary: 提交新任务
+      operationId: submit-task
+      parameters:
+        - name: type
+          in: path
+          description: task type
+          required: true
+          schema:
+            type: string
+            example: face-swap
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: 成功，返回任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+  /tasks/{task_id}:
+    get:
+      tags:
+        - tasks
+      summary: 获取任务详情
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功，返回任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+  /tasks/{task_id}/download:
+    post:
+      tags:
+        - tasks
+      summary: 打包下载任务产物
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: T09623
+      responses:
+        '200':
+          description: 成功，返回临时下载链接
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  link:
+                    type: string
+        '404':
+          description: 任务不存在/过期
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+
+  /buckets/{name}/{key}:
+    post:
+      tags:
+        - files
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '200':
+          description: 成功，返回文件id和文件路径
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  link:
+                    type: string
+    put:
+      tags:
+        - files
+      summary: 文件上传
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                content:
+                  type: string
+      responses:
+        '200':
+          description: 成功，返回文件id和文件路径
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  link:
+                    type: string
+        '403':
+          description: 没有上传权限
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+    get:
+      tags:
+        - files
+      summary: 文件查询
+      responses:
+        '200':
+          description: 成功，返回文件信息
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  link:
+                    type: string
+        '403':
+          description: 没有查询权限
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Failure'
+
+
+
+
+  /payment/balance:
+    get:
+      tags:
+        - payment
+      summary: 获取账户余额
+      responses:
+        '200':
+          description: 成功，返回具体余额
+          content:
+            text/plain:
+              schema:
+                type: integer
+  /payment/points:
+    get:
+      tags:
+        - payment
+      summary: 获取点数套餐信息
+      responses:
+        '200':
+          description: 成功，返回点数套餐集合(没有分页)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: 点数套餐id号
+                  name:
+                    type: string
+                    description: 套餐名称
+                  validity:
+                    type: integer
+                    description: 有效期，打算用数字 1代表一个月，12代表一年，24代表两年
+                  amount:
+                    type: integer
+                    description: 金额(1元表示为100，100元表示为10000)
+                  exchange:
+                    type: integer
+                    description: 可兑换的点数
+                  describe:
+                    type: string
+                    description: 点数描述(每张可低2.3元/张)
+
+  /payment/{point_id}/url:
+    get:
+      tags:
+        - payment
+      summary: 根据套餐id获取支付的url
+      responses:
+        '200':
+          description: 返回套餐对应的url
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /payment/protocol:
+    get:
+      tags:
+        - payment
+      summary: 获取服务协议
+      responses:
+        '200':
+          description: 返回服务协议字符串
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /payment/recharge/record:
+    get:
+      tags:
+        - payment
+      summary: 根据用户id获取充值记录
+      parameters:
+        - name: page
+          in: path
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功，返回用户充值记录信息(有分页)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/recharges'
+
+  /payment/expense/record:
+    get:
+      tags:
+        - payment
+      summary: 根据用户id获取用户点数消费记录
+      parameters:
+        - name: page
+          in: path
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功，返回用户点数消费记录(有分页)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/expenses'
+
+
+
+
+
+
+
+components:
+  schemas:
+    Failure:
+      type: object
+      properties:
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+      required:
+        - message
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+    Links:
+      type: object
+      properties:
+        next:
+          type: string
+        last:
+          type: string
+
+    User:
+      type: object
+      properties:
+        uid:
+          type: integer
+        nickname:
+          type: string
+        avatar:
+          type: string
+
+    Asset:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        thumbnail:
+          type: string
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        status:
+          type: object
+
+    recharge:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 充值记录id
+        name:
+          type: string
+          description: 套餐名称
+        ordeNumber:
+          type: string
+          description: 订单编号
+        time:
+          type:
+          description: 提交时间
+        points:
+          type: integer
+          description: 购买点数
+        amount:
+          type: integer
+          description: 金额(1元表示为100，100元表示为10000)
+        status:
+          type: integer
+          description: 订单状态
+        type:
+          type: integer
+          description: 类型
+
+    expense:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 消费记录id
+        ordeNumber:
+          type: string
+          description: 订单编号
+        time:
+          type: object
+          description: 提交时间
+        type:
+          type: integer
+          description: 类别
+        number:
+          type: integer
+          description: 数量
+        expensesNumber:
+          type: integer
+          description: 消费(点)
+        orderType:
+          type: integer
+          description: 订单类型
+
+
+    Tasks:
+      type: object
+      properties:
+        total:
+          type: integer
+        links:
+          $ref: '#/components/schemas/Links'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+
+    recharges:
+      type: object
+      properties:
+        total:
+          type: integer
+        links:
+          $ref: '#/components/schemas/Links'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/recharge'
+
+    expenses:
+      type: object
+      properties:
+        total:
+          type: integer
+        links:
+          $ref: '#/components/schemas/Links'
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/expense'
+
+
+
