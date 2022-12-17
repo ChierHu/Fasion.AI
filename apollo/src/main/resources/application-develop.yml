@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://play.fasionai.com:5432/fasion
+    username: admin
+    password: fasion
+  redis:
+    database: 0
+    host: play.fasionai.com
+    port: 6379
+    password: fasion@2021
+
+mybatis:
+  configuration:
+    #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+    map-underscore-to-camel-case: true
+
+apollo:
+  ks3:
+    bucket-name: test-data
+    bucket-domain: test-data.ks3-cn-beijing.ksyun.com
+    default-avatar: avatar.png
+    access-key: AKLTu_NfS8S0RZOpyEkV0Jh9-w
+    secret-key: OE/6cEgGKlHhuzZFTOtiQqfMef8cq0uoR6ptMDNYe46PHzboQKnn6HLWkCMgTIR32A==
+  task:
+    url: http://localhost:56300/
+  mercury:
+    url: http://localhost:56400/api
+  download:
+    workdir: /tmp/download
+  enable:
+    captcha: false

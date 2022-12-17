@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://data:5432/fasion
+    username: admin
+    password: fasion
+  redis:
+    database: 0
+    host: redis
+    port: 6379
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+logging:
+  log:
+    path: /data/logs
+  small:
+    level: Info
+
+apollo:
+  ks3:
+    bucket-name: test-data
+    bucket-domain: test-data.ks3-cn-beijing.ksyun.com
+    default-avatar: avatar.png
+    access-key: AKLTu_NfS8S0RZOpyEkV0Jh9-w
+    secret-key: OE/6cEgGKlHhuzZFTOtiQqfMef8cq0uoR6ptMDNYe46PHzboQKnn6HLWkCMgTIR32A==
+  task:
+    url: http://task:56300/
+  mercury:
+    url: http://pay:56400/api
+  download:
+    workdir: /tmp
+  enable:
+    captcha: false
