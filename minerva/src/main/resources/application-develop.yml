@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://play.fasionai.com:5432/fasion
+    username: admin
+    password: fasion
+  redis:
+    database: 0
+    host: play.fasionai.com
+    port: 6379
+    password: fasion@2021
+minerva:
+  ks3:
+    bucket-name: test-data
+    bucket-domain: test-data.ks3-cn-beijing.ksyun.com
+    access-key: AKLTu_NfS8S0RZOpyEkV0Jh9-w
+    secret-key: OE/6cEgGKlHhuzZFTOtiQqfMef8cq0uoR6ptMDNYe46PHzboQKnn6HLWkCMgTIR32A==
+  mercury:
+    url: http://localhost:56400/api
