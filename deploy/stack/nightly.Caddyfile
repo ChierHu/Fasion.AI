@@ -1,0 +1,4 @@
+nightly.aisway.com {
+    reverse_proxy /api/* api:56100
+    file_server
+}

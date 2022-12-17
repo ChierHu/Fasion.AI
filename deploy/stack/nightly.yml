@@ -1,0 +1,58 @@
+version: '3'
+
+services:
+  app:
+    image: registry.cn-beijing.aliyuncs.com/fasion/website:0.0.1
+    restart: always
+    volumes:
+      - '$PWD/data:/data'
+      - '$PWD/stack/nightly.Caddyfile:/etc/caddy/Caddyfile'
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - api
+  api:
+    image: registry.cn-beijing.aliyuncs.com/fasion/apollo:0.0.1
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: nightly
+    volumes:
+      - '$PWD/data/apollo:/data'
+    ports:
+      - 56100:56100
+    depends_on:
+      - data
+      - redis
+      - task
+  task:
+    image: registry.cn-beijing.aliyuncs.com/fasion/minerva:0.0.1
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: nightly
+    volumes:
+      - '$PWD/data/minerva:/data'
+    ports:
+      - 56300:56300
+    depends_on:
+      - data
+      - redis
+
+  data:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: fasion
+      POSTGRES_DB: fasion
+      PGDATA: /var/lib/postgresql/data/fasion
+    volumes:
+      - '$PWD/data:/var/lib/postgresql/data'
+      - '$PWD/seed/fasion.sql:/docker-entrypoint-initdb.d/fasion.sql'
+    ports:
+      - 5432:5432
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - 6379:6379
