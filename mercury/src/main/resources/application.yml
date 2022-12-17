@@ -1,0 +1,26 @@
+spring:
+  profiles:
+    active: ${profile}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 56400
+  servlet:
+    context-path: /api
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+mercury:
+  redis:
+    expiration: 7200
+    prefix:
+      authCode: ${profile}:authCode
+      phoneCode: ${profile}:loginCode
+      ticketCode: ${profile}:ticket
+  uid:
+    seed: 10000
+    step: 200

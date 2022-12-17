@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://data:5432/fasion
+    username: admin
+    password: fasion
+  redis:
+    database: 0
+    host: redis
+    port: 6379
+
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+logging:
+  log:
+    path: /data/logs
+  small:
+    level: Info
+
+mercury:
+  ks3:
+    bucket-name: test-data
+    bucket-domain: test-data.ks3-cn-beijing.ksyun.com
+    default-avatar: config/defaultAvatar.png
+    access-key: AKLTu_NfS8S0RZOpyEkV0Jh9-w
+    secret-key: OE/6cEgGKlHhuzZFTOtiQqfMef8cq0uoR6ptMDNYe46PHzboQKnn6HLWkCMgTIR32A==
+  task:
+    url: http://task:56300/
+  download:
+    workdir: /data/download
+  wechat:
+    root-url: https://api.mch.weixin.qq.com/v3
+    mch-id: 1612747535
+    mch-serial-no: 17E1EF6D7D8BCC43D3AA69E4D773F27B0CFA0E41
+    api-v3-key: AF4agtWEFPQDvnFnjkYWFwyGPst5rDyA
+    app-id: ww4be2bf8fea2489df
